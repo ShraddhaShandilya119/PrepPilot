@@ -222,26 +222,34 @@ const forgotPassword = async (req, res) => {
           },
         });
 
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to: user.email,
-          subject: "PrepPilot Password Reset",
-          html: `
-            <h2>Password Reset Request</h2>
-            <p>Hello ${user.name || 'User'},</p>
-            <p>Click below to reset your PrepPilot AI password:</p>
-            <a href="${resetLink}" style="display:inline-block;padding:10px 20px;background:#8B5CF6;color:#ffffff;text-decoration:none;border-radius:8px;">Reset Password</a>
-            <p>This link expires in 15 minutes.</p>
-          `,
-        });
-      } catch (mailErr) {
-        console.error("Nodemailer Email Error:", mailErr.message);
+        // Send mail asynchronously without blocking HTTP response
+        transporter
+          .sendMail({
+            from: process.env.EMAIL_USER,
+            to: user.email,
+            subject: "PrepPilot Password Reset 🔑",
+            html: `
+              <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #07050e; color: #ffffff; border-radius: 12px;">
+                <h2 style="color: #a855f7;">PrepPilot AI Password Reset</h2>
+                <p>Hello ${user.name || 'User'},</p>
+                <p>You requested a password reset for your PrepPilot AI account.</p>
+                <p style="margin: 20px 0;">
+                  <a href="${resetLink}" style="padding: 12px 24px; background: linear-gradient(90deg, #a855f7, #ec4899); color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block;">Reset My Password</a>
+                </p>
+                <p style="color: #9ca3af; font-size: 12px;">This link will expire in 15 minutes.</p>
+              </div>
+            `,
+          })
+          .then(() => console.log(`📧 Reset email delivered to ${user.email}`))
+          .catch((mailErr) => console.error("Nodemailer Email Error:", mailErr.message));
+      } catch (mailSetupErr) {
+        console.error("Nodemailer Setup Error:", mailSetupErr.message);
       }
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: `Password reset link sent to ${user.email}!`,
+      message: `Password reset link sent to ${user.email}! Check your inbox or spam folder.`,
       resetLink,
     });
 
