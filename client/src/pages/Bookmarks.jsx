@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from '../api/config';
 
 const initialBookmarks = [
   {
@@ -51,7 +52,7 @@ const Bookmarks = () => {
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        const response = await axios.get('http://localhost:5000/api/bookmarks', {
+        const response = await axios.get(`${API_BASE_URL}/api/bookmarks`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.data?.success && Array.isArray(response.data.bookmarks)) {
@@ -76,7 +77,7 @@ const Bookmarks = () => {
     try {
       const token = localStorage.getItem('token');
       if (token && id && id.length === 24) {
-        await axios.delete(`http://localhost:5000/api/bookmarks/${id}`, {
+        await axios.delete(`${API_BASE_URL}/api/bookmarks/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }

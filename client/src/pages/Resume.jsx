@@ -32,6 +32,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../api/config';
 
 const Resume = () => {
   const fileInputRef = useRef(null);
@@ -61,7 +62,7 @@ const Resume = () => {
         return;
       }
 
-      const response = await axios.get('http://localhost:5000/api/resume/my-resumes', {
+      const response = await axios.get(`${API_BASE_URL}/api/resume/my-resumes`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -126,7 +127,7 @@ const Resume = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/resume/upload', formData, {
+      const response = await axios.post(`${API_BASE_URL}/api/resume/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`,
@@ -194,7 +195,7 @@ const Resume = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post(`http://localhost:5000/api/resume/analyze/${resumeId}`, {}, {
+      const response = await axios.post(`${API_BASE_URL}/api/resume/analyze/${resumeId}`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -215,7 +216,7 @@ const Resume = () => {
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        await axios.delete(`http://localhost:5000/api/resume/${id}`, {
+        await axios.delete(`${API_BASE_URL}/api/resume/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
@@ -233,7 +234,7 @@ const Resume = () => {
   };
 
   const fileUrl = currentAnalysis?.filePath && currentAnalysis.filePath !== '#'
-    ? `http://localhost:5000/${currentAnalysis.filePath}`
+    ? `${API_BASE_URL}/${currentAnalysis.filePath}`
     : null;
 
   // Extract structured analysis data or fallback

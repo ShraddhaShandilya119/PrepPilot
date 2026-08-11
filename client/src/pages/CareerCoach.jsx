@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import authApi from '../api/authApi';
+import { API_BASE_URL } from '../api/config';
 
 const suggestedQuestions = [
   'How can I crack Amazon SDE?',
@@ -86,7 +87,7 @@ const CareerCoach = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        'http://localhost:5000/api/chat',
+        `${API_BASE_URL}/api/chat`,
         { message: messageText },
         {
           headers: { Authorization: `Bearer ${token}` },

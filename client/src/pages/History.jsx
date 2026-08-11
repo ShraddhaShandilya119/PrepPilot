@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import authApi from '../api/authApi';
+import { API_BASE_URL } from '../api/config';
 
 const mockInterviewsData = [
   {
@@ -89,7 +90,7 @@ const History = () => {
 
       // 2. Fetch User Resume History
       try {
-        const resumeRes = await axios.get('http://localhost:5000/api/resume/my-resumes', {
+        const resumeRes = await axios.get(`${API_BASE_URL}/api/resume/my-resumes`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (resumeRes.data?.resumes) {

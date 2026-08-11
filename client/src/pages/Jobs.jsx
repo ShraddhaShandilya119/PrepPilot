@@ -16,6 +16,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../api/config';
 
 const Jobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -39,7 +40,7 @@ const Jobs = () => {
         return;
       }
 
-      const response = await axios.get('http://localhost:5000/api/jobs/matched', {
+      const response = await axios.get(`${API_BASE_URL}/api/jobs/matched`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import authApi from '../api/authApi';
+import { API_BASE_URL } from '../api/config';
 import StatsCard from '../components/dashboard/StatsCard';
 import ProgressChart from '../components/dashboard/ProgressChart';
 import QuickActions from '../components/dashboard/QuickActions';
@@ -48,7 +49,7 @@ const Dashboard = () => {
 
       // 2. Fetch User Latest Resume ATS Score
       try {
-        const resumeRes = await axios.get('http://localhost:5000/api/resume/my-resumes', {
+        const resumeRes = await axios.get(`${API_BASE_URL}/api/resume/my-resumes`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

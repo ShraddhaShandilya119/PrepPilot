@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import authApi from '../api/authApi';
+import { API_BASE_URL } from '../api/config';
 
 const Interview = () => {
   const navigate = useNavigate();
@@ -81,7 +82,7 @@ const Interview = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        'http://localhost:5000/api/interview/generate',
+        `${API_BASE_URL}/api/interview/generate`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -141,7 +142,7 @@ const Interview = () => {
         const token = localStorage.getItem('token');
         if (token) {
           await axios.post(
-            'http://localhost:5000/api/bookmarks',
+            `${API_BASE_URL}/api/bookmarks`,
             {
               type: 'interview-question',
               title: q.question,
