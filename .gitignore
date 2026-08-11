@@ -1,0 +1,27 @@
+# Environment Variables & Secrets (CRITICAL FOR GITHUB SAFETY)
+.env
+.env.local
+.env.production
+*.env
+server/.env
+
+# Dependency Directories
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Production Builds
+client/dist/
+dist/
+build/
+
+# Uploaded Resumes (Keep directory, ignore uploaded files)
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Operating System & IDE
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log

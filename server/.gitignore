@@ -1,0 +1,14 @@
+# Environment Variables & Secrets
+.env
+.env.local
+*.env
+
+# Dependencies
+node_modules/
+
+# User Uploads
+uploads/*
+!uploads/.gitkeep
+
+# Logs
+*.log
