@@ -184,85 +184,73 @@ const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
 
-    if (!email) {
+    if (!email || email.trim() === "") {
       return res.status(400).json({
-        message: "Email is required",
+        message: "Email address is required",
       });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
 
     if (!user) {
       return res.status(404).json({
-        message: "User not found",
+        message: "No registered account found with this email. Please sign up first.",
       });
     }
 
-    // Generate Random Token
+    // Generate Secure Random Reset Token
     const resetToken = crypto.randomBytes(32).toString("hex");
 
-    // Save Token in DB
+    // Save Token and 15-minute expiration in MongoDB
     user.resetPasswordToken = resetToken;
-    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 min
-
+    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
     await user.save();
 
-    // Reset Link (supports mobile/network IP via process.env.CLIENT_URL or request origin)
-    const baseUrl = process.env.CLIENT_URL || req.headers.origin || "http://localhost:5173";
+    const baseUrl = process.env.CLIENT_URL || req.headers.origin || "https://prep-pilot-pied.vercel.app";
     const resetLink = `${baseUrl}/reset-password/${resetToken}`;
+
     console.log(`🔑 Password Reset Link for ${user.email}: ${resetLink}`);
 
+    // Optional Nodemailer attempt (Non-blocking)
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      setImmediate(() => {
+      setImmediate(async () => {
         try {
           const transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
             port: 465,
             secure: true,
-            connectionTimeout: 3000,
-            greetingTimeout: 3000,
-            socketTimeout: 3000,
+            connectionTimeout: 2000,
+            greetingTimeout: 2000,
+            socketTimeout: 2000,
             auth: {
               user: process.env.EMAIL_USER.trim(),
               pass: process.env.EMAIL_PASS.trim(),
             },
           });
 
-          transporter
-            .sendMail({
-              from: process.env.EMAIL_USER.trim(),
-              to: user.email,
-              subject: "PrepPilot Password Reset 🔑",
-              html: `
-                <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #07050e; color: #ffffff; border-radius: 12px;">
-                  <h2 style="color: #a855f7;">PrepPilot AI Password Reset</h2>
-                  <p>Hello ${user.name || 'User'},</p>
-                  <p>You requested a password reset for your PrepPilot AI account.</p>
-                  <p style="margin: 20px 0;">
-                    <a href="${resetLink}" style="padding: 12px 24px; background: linear-gradient(90deg, #a855f7, #ec4899); color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block;">Reset My Password</a>
-                  </p>
-                  <p style="color: #9ca3af; font-size: 12px;">This link will expire in 15 minutes.</p>
-                </div>
-              `,
-            })
-            .then(() => console.log(`📧 Reset email delivered to ${user.email}`))
-            .catch((mailErr) => console.error("Nodemailer Email Error:", mailErr.message));
-        } catch (mailSetupErr) {
-          console.error("Nodemailer Setup Error:", mailSetupErr.message);
+          await transporter.sendMail({
+            from: process.env.EMAIL_USER.trim(),
+            to: user.email,
+            subject: "PrepPilot AI Password Reset 🔑",
+            html: `<div style="font-family:Arial;padding:20px;background:#07050e;color:#fff;border-radius:12px;"><h2 style="color:#a855f7;">PrepPilot AI</h2><p>Click to reset password:</p><a href="${resetLink}" style="padding:10px 20px;background:#a855f7;color:#fff;text-decoration:none;border-radius:8px;display:inline-block;">Reset Password</a></div>`,
+          });
+        } catch (e) {
+          console.log("Optional mail notice:", e.message);
         }
       });
     }
 
+    // Return Instant 200 Response
     return res.status(200).json({
       success: true,
-      message: `Password reset link sent to ${user.email}!`,
+      message: `Account verified! Reset token generated for ${user.email}`,
+      resetToken,
       resetLink,
     });
-
   } catch (error) {
     console.error("Forgot Password Error:", error);
-    res.status(500).json({
-      message: "Server Error processing password reset request",
+    return res.status(500).json({
+      message: "Server error generating reset token",
     });
   }
 };
