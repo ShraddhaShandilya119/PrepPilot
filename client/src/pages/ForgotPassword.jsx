@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { KeyRound, Loader2, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { KeyRound, Loader2, AlertCircle, CheckCircle2, ArrowLeft, ExternalLink, Copy, Check } from 'lucide-react';
 import authApi from '../api/authApi';
 
 const ForgotPassword = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [directResetUrl, setDirectResetUrl] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,15 +22,20 @@ const ForgotPassword = () => {
     setLoading(true);
     setError('');
     setSuccessMessage('');
+    setDirectResetUrl('');
 
     try {
       const response = await authApi.post('/forgot-password', { email });
-      setSuccessMessage(response.data?.message || 'Password reset link sent to your email address!');
+      setSuccessMessage(response.data?.message || 'Password reset link generated!');
+      
+      if (response.data?.resetLink) {
+        setDirectResetUrl(response.data.resetLink);
+      }
     } catch (err) {
       console.error(err);
       if (err.code === 'ERR_NETWORK' || err.response?.status === 404) {
         // Demo fallback message if server is offline or mock testing
-        setSuccessMessage(`Password reset link sent to ${email}! Check your inbox or spam folder.`);
+        setSuccessMessage(`Password reset link generated for ${email}!`);
       } else {
         setError(err.response?.data?.message || 'Failed to send reset link. Please try again.');
       }
@@ -36,8 +44,25 @@ const ForgotPassword = () => {
     }
   };
 
+  const handleCopyLink = () => {
+    if (directResetUrl) {
+      navigator.clipboard.writeText(directResetUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const extractPath = (url) => {
+    try {
+      const u = new URL(url);
+      return u.pathname;
+    } catch {
+      return url;
+    }
+  };
+
   return (
-    <div className="w-full p-8 rounded-3xl bg-[#131b2e]/80 backdrop-blur-xl border border-purple-500/30 shadow-[0_20px_50px_rgba(112,26,238,0.2)] text-center relative z-10 font-sans">
+    <div className="w-full p-8 rounded-3xl bg-[#131b2e]/80 backdrop-blur-xl border border-purple-500/30 shadow-[0_20px_50px_rgba(112,26,238,0.2)] text-center relative z-10 font-sans max-w-md mx-auto">
       
       {/* Success Popup Banner */}
       {successMessage ? (
@@ -45,14 +70,43 @@ const ForgotPassword = () => {
           <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 mx-auto shadow-[0_0_25px_rgba(16,185,129,0.4)] animate-bounce">
             <CheckCircle2 className="w-10 h-10" />
           </div>
-          <h3 className="text-2xl font-extrabold text-white">Reset Link Sent! ✉️</h3>
-          <p className="text-sm text-gray-300 max-w-sm mx-auto leading-relaxed">
+          
+          <h3 className="text-2xl font-extrabold text-white">Reset Link Ready! 🔑</h3>
+          <p className="text-xs text-gray-300 max-w-sm mx-auto leading-relaxed">
             {successMessage}
           </p>
-          <div className="pt-4">
+
+          {/* Instant Direct Action Link Box */}
+          {directResetUrl && (
+            <div className="p-4 rounded-2xl bg-purple-950/50 border border-purple-500/40 text-left space-y-3 my-4">
+              <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider block">
+                ⚡ Instant Reset Link:
+              </span>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => navigate(extractPath(directResetUrl))}
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  <span>Click Here to Reset Password Now</span>
+                </button>
+
+                <button
+                  onClick={handleCopyLink}
+                  className="p-2.5 rounded-xl bg-purple-900/60 hover:bg-purple-800 text-purple-300 hover:text-white border border-purple-500/30 shrink-0 cursor-pointer"
+                  title="Copy Link"
+                >
+                  {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="pt-2">
             <Link
               to="/login"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg transition-all"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-purple-950/60 hover:bg-purple-900/60 border border-purple-500/30 text-purple-300 hover:text-white font-bold text-xs transition-all"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Return to Login</span>
