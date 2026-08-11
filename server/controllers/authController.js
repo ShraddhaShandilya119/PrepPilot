@@ -217,14 +217,14 @@ const forgotPassword = async (req, res) => {
         try {
           const transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
-            port: 465,
-            secure: true,
-            connectionTimeout: 2000,
-            greetingTimeout: 2000,
-            socketTimeout: 2000,
+            port: 587,
+            secure: false,
             auth: {
               user: process.env.EMAIL_USER.trim(),
               pass: process.env.EMAIL_PASS.trim(),
+            },
+            tls: {
+              rejectUnauthorized: false,
             },
           });
 
