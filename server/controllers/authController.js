@@ -213,45 +213,49 @@ const forgotPassword = async (req, res) => {
     console.log(`🔑 Password Reset Link for ${user.email}: ${resetLink}`);
 
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      try {
-        const transporter = nodemailer.createTransport({
-          host: "smtp.gmail.com",
-          port: 465,
-          secure: true,
-          auth: {
-            user: process.env.EMAIL_USER.trim(),
-            pass: process.env.EMAIL_PASS.trim(),
-          },
-        });
+      setImmediate(() => {
+        try {
+          const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true,
+            connectionTimeout: 3000,
+            greetingTimeout: 3000,
+            socketTimeout: 3000,
+            auth: {
+              user: process.env.EMAIL_USER.trim(),
+              pass: process.env.EMAIL_PASS.trim(),
+            },
+          });
 
-        // Send mail asynchronously without blocking HTTP response
-        transporter
-          .sendMail({
-            from: process.env.EMAIL_USER,
-            to: user.email,
-            subject: "PrepPilot Password Reset 🔑",
-            html: `
-              <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #07050e; color: #ffffff; border-radius: 12px;">
-                <h2 style="color: #a855f7;">PrepPilot AI Password Reset</h2>
-                <p>Hello ${user.name || 'User'},</p>
-                <p>You requested a password reset for your PrepPilot AI account.</p>
-                <p style="margin: 20px 0;">
-                  <a href="${resetLink}" style="padding: 12px 24px; background: linear-gradient(90deg, #a855f7, #ec4899); color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block;">Reset My Password</a>
-                </p>
-                <p style="color: #9ca3af; font-size: 12px;">This link will expire in 15 minutes.</p>
-              </div>
-            `,
-          })
-          .then(() => console.log(`📧 Reset email delivered to ${user.email}`))
-          .catch((mailErr) => console.error("Nodemailer Email Error:", mailErr.message));
-      } catch (mailSetupErr) {
-        console.error("Nodemailer Setup Error:", mailSetupErr.message);
-      }
+          transporter
+            .sendMail({
+              from: process.env.EMAIL_USER.trim(),
+              to: user.email,
+              subject: "PrepPilot Password Reset 🔑",
+              html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #07050e; color: #ffffff; border-radius: 12px;">
+                  <h2 style="color: #a855f7;">PrepPilot AI Password Reset</h2>
+                  <p>Hello ${user.name || 'User'},</p>
+                  <p>You requested a password reset for your PrepPilot AI account.</p>
+                  <p style="margin: 20px 0;">
+                    <a href="${resetLink}" style="padding: 12px 24px; background: linear-gradient(90deg, #a855f7, #ec4899); color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block;">Reset My Password</a>
+                  </p>
+                  <p style="color: #9ca3af; font-size: 12px;">This link will expire in 15 minutes.</p>
+                </div>
+              `,
+            })
+            .then(() => console.log(`📧 Reset email delivered to ${user.email}`))
+            .catch((mailErr) => console.error("Nodemailer Email Error:", mailErr.message));
+        } catch (mailSetupErr) {
+          console.error("Nodemailer Setup Error:", mailSetupErr.message);
+        }
+      });
     }
 
     return res.status(200).json({
       success: true,
-      message: `Password reset link sent to ${user.email}! Check your inbox or spam folder.`,
+      message: `Password reset link sent to ${user.email}!`,
       resetLink,
     });
 
