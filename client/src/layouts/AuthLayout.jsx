@@ -68,8 +68,8 @@ const AuthLayout = () => {
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-base font-bold text-white">Detailed Performance Insights</h4>
-                <p className="text-xs text-gray-400 mt-0.5">Track your confidence, communication, and technical readiness over time.</p>
+                <h4 className="text-base font-bold text-white">24/7 AI Career Coach</h4>
+                <p className="text-xs text-gray-400 mt-0.5">Get instant career roadmaps, technical guidance & interview tips powered by Gemini AI.</p>
               </div>
             </div>
           </div>
